@@ -1,0 +1,45 @@
+Apply docker for GUI applications test
+
+Compare with virtual machine, docker is a software level[The operating system] virtualization. it utilize linux kernel namespace and cgroups and etc.(Please read more from docker docs).
+
+
+使用docker的优势在于，在一台机器上，我可以非常便捷的创建一个或多个运行环境（测试或开发包括所需要的网络环境），都可以通过docker迅速构建出来，这样大大节省来时间和资源。为什么能更节省时间和资源 1. docker的容器技术：一个容器就包含了操作系统，软件的运行环境，我们可以通过一个docker file轻易的定义我们需要那些环境来运行我们的程序，然后迅速就能够创建出来这样一个环境并把我们的程序放到上面运行 2. 相比第一条而已，优势已经明显，我可以定义多个环境同时，跑在同一台机器上面，这样成本就会大大降低。
+
+ 
+
+下面是整个环境的流程
+
+1. 创建dockerfile，定义所需要的运行环境如下, 然后就可以通过build出所需的镜像来
+
+需要注意的
+
+a. 更换source.list ／etc／source.list，因为有的源无法下载
+
+b. dockerfile的定义与docker镜像的分层有很大关系，每一条命令在docker镜像里就是一层，尽可能把多个安装放在同一层，这样也会方便后期的使用
+
+2. 创建registry server
+
+registry server就是帮助托管docker镜像的服务器，如果是没有这个必要，直接在本地运行docker镜像就可以了
+
+docker已经提供了registry镜像，只需要直接从远端pull下来后直接使用就OK了
+
+注意docker registry安装完成以后，需要把镜像push到registry上面才能被其它的机器访问
+
+另外如果是需要从registryserver上pull所需要的镜像的话，需要在本地做一些配置，a. 添加／etc/docker/daemon.json文件如果没有的话，并添加如下配置{insecure-registry="hostname:portnumber"} b.在/etc/default/docker文件中添加 OPTS_DOCKER = insecure-registry:"hostname:port" 大概是这样，就可以直接从registry上pull镜像了。
+
+3. 使用图形化的docker容器（使用图形化的容器应该是有多种方法1. 下面讲的用linux的X11应该就是图形化接口 2. 在容器内部安装vncserver然后在外部可以直接访问
+
+这里用到了 /tmp/.X11-unix 这里面应该是包括了linux环境的图形化的文件，这个地方就需要用到docker的文件挂载 就是把host机器上的目录或文件夹放到容器当中，类似于虚拟机的共享文件夹，这样以来，就可以通过.x11 tcp套接字，把容器内部的环境运行在外部host上面
+
+看如下命令和实例
+
+ 
+
+到这里该场景的测试基本差不多了，另外要说的是docker除了挂载文件夹意外，docker容器也可以被作为数据卷挂载到其它容器当中去。这样大概就完成了
+
+ 
+
+后面需要用到最多的应该就是docker的网络，docker同样应用在云上面，
+
+通过一定的配置一样可以把docker做成一个集群，docker的网络提供了这样的能力。
+
